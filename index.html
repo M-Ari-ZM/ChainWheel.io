@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChainWheel.io - Perfect Loop</title>
+    <style>
+      /* --- VARIABEL WARNA (TEMA TERANG) --- */
+      :root {
+        --bg-body: #f4f7f6;
+        --bg-card: #ffffff;
+        --bg-input: #fafafa;
+        --border-color: #e2e8f0;
+        --text-main: #2c3e50;
+        --text-muted: #7f8c8d;
+        --text-item: #4a5568;
+        --shadow: rgba(0, 0, 0, 0.05);
+        --bg-final-item: #e8f8f5;
+      }
+
+      /* --- VARIABEL WARNA (TEMA GELAP) --- */
+      [data-theme="dark"] {
+        --bg-body: #121214;
+        --bg-card: #1a1a1e;
+        --bg-input: #26262b;
+        --border-color: #323238;
+        --text-main: #f1f5f9;
+        --text-muted: #94a3b8;
+        --text-item: #cbd5e1;
+        --shadow: rgba(0, 0, 0, 0.3);
+        --bg-final-item: #1b3635;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        transition:
+          background-color 0.3s,
+          border-color 0.3s,
+          color 0.3s;
+      }
+
+      body {
+        background-color: var(--bg-body);
+        color: var(--text-main);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      main {
+        display: grid;
+        grid-template-columns: 300px 1fr 260px; /* Struktur 3 Kolom */
+        gap: 20px;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: var(--bg-card);
+        width: 100%;
+        padding: 1rem;
+        padding-inline: 1.5rem;
+        margin-bottom: 20px;
+        border-radius: 12px;
+      }
+      header h1 {
+        color: #3498db;
+        font-size: 1.5rem;
+      }
+      header span {
+        font-size: 0.85rem;
+      }
+
+      /* --- SIDEBAR KIRI (INPUT & LOG) --- */
+      .sidebar-left {
+        background: var(--bg-card);
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px var(--shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        height: calc(100vh - 40px);
+      }
+
+      h3 {
+        color: var(--text-main);
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+      }
+
+      textarea {
+        width: 100%;
+        height: 140px;
+        padding: 10px;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        resize: none;
+        font-size: 14px;
+        background-color: var(--bg-input);
+        color: var(--text-main);
+      }
+
+      textarea:focus {
+        outline: none;
+        border-color: #3498db;
+      }
+
+      .search-box {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 14px;
+        background-color: var(--bg-input);
+        color: var(--text-main);
+      }
+
+      .search-box:focus {
+        outline: none;
+        border-color: #3498db;
+      }
+
+      .history-section {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overflow: hidden;
+      }
+
+      .history-box {
+        flex-grow: 1;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        padding: 10px;
+        overflow-y: auto;
+        background: var(--bg-input);
+        font-size: 14px;
+      }
+
+      .history-item {
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-item);
+        display: block;
+      }
+
+      .history-item.hidden {
+        display: none !important;
+      }
+
+      .history-item strong {
+        color: #e74c3c;
+      }
+
+      /* --- KONTEN TENGAH (RODA) --- */
+      .main-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: calc(100vh - 60px);
+      }
+
+      .current-status {
+        margin-bottom: 25px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--text-main);
+        background: var(--bg-card);
+        padding: 10px 25px;
+        border-radius: 20px;
+        box-shadow: 0 4px 10px var(--shadow);
+      }
+
+      .wheel-container {
+        position: relative;
+        width: 380px;
+        height: 380px;
+      }
+
+      .pointer {
+        position: absolute;
+        top: -15px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 15px solid transparent;
+        border-right: 15px solid transparent;
+        border-top: 30px solid #ff4757;
+        z-index: 10;
+      }
+
+      canvas {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+      }
+
+      /* --- SIDEBAR KANAN (KONTROL VERTIKAL) --- */
+      .sidebar-right {
+        background: var(--bg-card);
+        padding: 25px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px var(--shadow);
+        display: flex;
+        flex-direction: column;
+        gap: 25px; /* Jarak vertikal antar kontrol */
+        height: calc(100vh - 40px);
+        justify-content: flex-start;
+      }
+
+      .spin-btn {
+        padding: 14px;
+        font-size: 16px;
+        font-weight: bold;
+        color: white;
+        background-color: #2ecc71;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+        transition: all 0.2s;
+        width: 100%;
+      }
+
+      .spin-btn:hover {
+        background-color: #27ae60;
+        transform: translateY(-2px);
+      }
+
+      .spin-btn:disabled {
+        background-color: #bdc3c7;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+      }
+
+      .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: var(--bg-input);
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+      }
+
+      .control-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* Toggle & Slider Styling */
+      .toggle-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--text-item);
+        user-select: none;
+        font-size: 14px;
+        width: 100%;
+      }
+
+      .switch {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+        max-width: 44px;
+        height: 22px;
+      }
+
+      .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e1;
+        transition: 0.3s;
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #3498db;
+      }
+      input:checked + .slider:before {
+        transform: translateX(22px);
+      }
+
+      .speed-slider {
+        width: 100%;
+        accent-color: #3498db;
+        cursor: pointer;
+        margin-top: 5px;
+      }
+
+      /* --- MEDIA QUERY RESPONSIVE (MOBILE) --- */
+      @media (max-width: 900px) {
+        body {
+          height: auto;
+          padding: 10px;
+        }
+
+        header {
+          flex-direction: column;
+        }
+        header span {
+          margin-top: 5px;
+        }
+
+        main {
+          grid-template-columns: 1fr; /* Jadi satu kolom penuh ke bawah */
+          gap: 15px;
+        }
+
+        .sidebar-left,
+        .main-content,
+        .sidebar-right {
+          height: auto;
+        }
+
+        .sidebar-left {
+          order: 1; /* Input di atas */
+        }
+
+        .main-content {
+          order: 2; /* Roda di tengah */
+          padding: 20px 0;
+        }
+
+        .sidebar-right {
+          order: 3; /* Panel kontrol di bawah */
+          flex-direction: row; /* Berjejer horizontal di mobile */
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .sidebar-right > * {
+          flex: 1 1 calc(50% - 10px); /* Membagi rata tombol kontrol */
+        }
+
+        .spin-btn {
+          flex: 1 1 100%; /* Tombol spin tetap full lebar */
+        }
+
+        .wheel-container {
+          width: 300px;
+          height: 300px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>ChainWheel.io</h1>
+      <span>Created by <b>Ari ZM</b></span>
+    </header>
+
+    <main>
+      <div class="sidebar-left">
+        <div>
+          <h3>Input Nama</h3>
+          <small style="color: var(--text-muted)">1 baris = 1 nama</small>
+          <textarea
+            id="nameInput"
+            placeholder="Ketik nama lalu tekan Enter..."
+          ></textarea>
+        </div>
+
+        <div class="history-section">
+          <h3>Log Rantai Hasil</h3>
+          <input
+            type="text"
+            id="logSearch"
+            class="search-box"
+            placeholder="Cari nama..."
+            oninput="filterLogs()"
+          />
+          <div class="history-box" id="historyBox"></div>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="current-status" id="statusPemberi">
+          Pemberi Saat Ini: <span style="color: #3498db">- Belum Ada -</span>
+        </div>
+
+        <div class="wheel-container">
+          <div class="pointer"></div>
+          <canvas id="wheel" width="500" height="500"></canvas>
+        </div>
+      </div>
+
+      <div class="sidebar-right">
+        <button class="spin-btn" id="spinBtn" onclick="spinWheel()">
+          PUTAR RODA
+        </button>
+
+        <div class="control-group">
+          <span class="control-label">Sistem</span>
+          <label class="toggle-container">
+            <span id="toggleText">Auto-Spin: OFF</span>
+            <div class="switch">
+              <input
+                type="checkbox"
+                id="autoToggle"
+                onchange="toggleAutoMode()"
+              />
+              <span class="slider"></span>
+            </div>
+          </label>
+        </div>
+
+        <div class="control-group">
+          <span
+            class="control-label"
+            style="display: flex; justify-content: space-between"
+          >
+            <span>Durasi Roda</span>
+            <span style="color: #3498db"><span id="speedVal">4</span>s</span>
+          </span>
+          <input
+            type="range"
+            id="speedSlider"
+            class="speed-slider"
+            min="1"
+            max="8"
+            value="4"
+            oninput="updateSpeed()"
+          />
+        </div>
+
+        <div class="control-group">
+          <span class="control-label">Tampilan</span>
+          <label class="toggle-container">
+            <span>Tema Gelap</span>
+            <div class="switch">
+              <input
+                type="checkbox"
+                id="themeToggle"
+                onchange="toggleTheme()"
+              />
+              <span class="slider"></span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const canvas = document.getElementById("wheel");
+      const ctx = canvas.getContext("2d");
+      const nameInput = document.getElementById("nameInput");
+      const historyBox = document.getElementById("historyBox");
+      const statusPemberi = document.getElementById("statusPemberi");
+      const spinBtn = document.getElementById("spinBtn");
+      const autoToggle = document.getElementById("autoToggle");
+      const toggleText = document.getElementById("toggleText");
+      const logSearch = document.getElementById("logSearch");
+      const speedSlider = document.getElementById("speedSlider");
+      const speedVal = document.getElementById("speedVal");
+      const themeToggle = document.getElementById("themeToggle");
+
+      let names = [];
+      let firstPemberi = null;
+      let currentPemberi = null;
+      let isSpinning = false;
+      let isAutoMode = false;
+      let currentRotation = 0;
+      let spinDuration = 4;
+
+      const colors = [
+        "#f1c40f",
+        "#e67e22",
+        "#e74c3c",
+        "#9b59b6",
+        "#3498db",
+        "#1abc9c",
+        "#2ecc71",
+      ];
+
+      nameInput.addEventListener("input", () => {
+        if (isSpinning) return;
+        names = nameInput.value
+          .split("\n")
+          .map((name) => name.trim())
+          .filter((name) => name !== "");
+        drawWheel();
+      });
+
+      function toggleAutoMode() {
+        isAutoMode = autoToggle.checked;
+        toggleText.innerText = isAutoMode ? "Auto-Spin: ON" : "Auto-Spin: OFF";
+        toggleText.style.color = isAutoMode ? "#3498db" : "var(--text-item)";
+
+        if (isAutoMode && !isSpinning && names.length > 0) {
+          spinWheel();
+        }
+      }
+
+      function updateSpeed() {
+        spinDuration = parseFloat(speedSlider.value);
+        speedVal.innerText = spinDuration;
+        canvas.style.transition = `transform ${spinDuration}s cubic-bezier(0.1, 0.8, 0.1, 1)`;
+      }
+
+      // FUNGSI BARU: Mengaktifkan / Mematikan Dark Mode
+      function toggleTheme() {
+        if (themeToggle.checked) {
+          document.documentElement.setAttribute("data-theme", "dark");
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+        }
+      }
+
+      function filterLogs() {
+        const query = logSearch.value.toLowerCase().trim();
+        const logItems = historyBox.getElementsByClassName("history-item");
+        for (let item of logItems) {
+          if (item.innerText.toLowerCase().includes(query)) {
+            item.classList.remove("hidden");
+          } else {
+            item.classList.add("hidden");
+          }
+        }
+      }
+
+      function drawWheel() {
+        const numSegments = names.length;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (numSegments === 0) {
+          ctx.beginPath();
+          ctx.arc(250, 250, 240, 0, 2 * Math.PI);
+          ctx.fillStyle = themeToggle.checked ? "#26262b" : "#e2e8f0";
+          ctx.fill();
+          ctx.fillStyle = "var(--text-muted)";
+          ctx.font = "20px Arial";
+          ctx.textAlign = "center";
+          ctx.fillText("Masukkan nama di kiri", 250, 250);
+          return;
+        }
+
+        const arcSize = (2 * Math.PI) / numSegments;
+
+        for (let i = 0; i < numSegments; i++) {
+          const angle = i * arcSize;
+          ctx.beginPath();
+          ctx.fillStyle = colors[i % colors.length];
+          ctx.moveTo(250, 250);
+          ctx.arc(250, 250, 240, angle, angle + arcSize);
+          ctx.lineTo(250, 250);
+          ctx.fill();
+          ctx.stroke();
+          ctx.strokeStyle = themeToggle.checked ? "#1a1a1e" : "#fff";
+
+          ctx.save();
+          ctx.translate(250, 250);
+          ctx.rotate(angle + arcSize / 2);
+          ctx.textAlign = "right";
+          ctx.fillStyle = "white";
+          ctx.font = "bold 18px Arial";
+          ctx.fillText(names[i], 220, 10);
+          ctx.restore();
+        }
+      }
+
+      function spinWheel() {
+        if (isSpinning) return;
+
+        if (!currentPemberi) {
+          if (names.length === 0) {
+            alert("Tambahkan nama terlebih dahulu di kolom input!");
+            autoToggle.checked = false;
+            toggleAutoMode();
+            return;
+          }
+          firstPemberi = names[0];
+          currentPemberi = firstPemberi;
+          names.splice(0, 1);
+          updateTextArea();
+          drawWheel();
+
+          statusPemberi.innerHTML = `Pemberi Saat Ini: <span style="color:#e67e22;">${currentPemberi}</span>`;
+
+          if (names.length === 0) {
+            alert("Tambahkan minimal 2 nama!");
+            return;
+          }
+        }
+
+        isSpinning = true;
+        spinBtn.disabled = true;
+        nameInput.disabled = true;
+
+        const numSegments = names.length;
+        const arcSize = 360 / numSegments;
+        const winnerIndex = Math.floor(Math.random() * numSegments);
+        const targetAngle =
+          (numSegments - winnerIndex - 1) * arcSize + arcSize / 2 - 90;
+        const extraRotations = (3 + Math.floor(Math.random() * 3)) * 360;
+
+        currentRotation += extraRotations + targetAngle;
+        canvas.style.transform = `rotate(${currentRotation}deg)`;
+
+        setTimeout(() => {
+          const winnerName = names[winnerIndex];
+
+          // 1. Catat Log Rantai
+          const historyItem = document.createElement("div");
+          historyItem.className = "history-item";
+          historyItem.innerHTML = `<strong>${currentPemberi}</strong> ➔ <strong>${winnerName}</strong>`;
+          historyBox.appendChild(historyItem);
+          filterLogs();
+          historyBox.scrollTop = historyBox.scrollHeight;
+
+          // 2. Transisi Peran
+          currentPemberi = winnerName;
+          statusPemberi.innerHTML = `Pemberi Saat Ini: <span style="color:#e67e22;">${currentPemberi}</span>`;
+
+          // 3. Hapus pemenang & Update UI
+          names.splice(winnerIndex, 1);
+          updateTextArea();
+          drawWheel();
+
+          isSpinning = false;
+          spinBtn.disabled = false;
+          nameInput.disabled = false;
+
+          if (names.length === 0) {
+            // Loop Penutup
+            const finalHistoryItem = document.createElement("div");
+            finalHistoryItem.className = "history-item";
+            finalHistoryItem.style.backgroundColor = "var(--bg-final-item)";
+            finalHistoryItem.innerHTML = `<strong>${currentPemberi}</strong> ➔ <strong>${firstPemberi}</strong> 🔄`;
+            historyBox.appendChild(finalHistoryItem);
+            historyBox.scrollTop = historyBox.scrollHeight;
+
+            statusPemberi.innerHTML = `Rantai Sempurna Terbentuk! 🔄`;
+            spinBtn.disabled = true;
+            autoToggle.checked = false;
+            toggleAutoMode();
+
+            alert(
+              `Rantai selesai secara melingkar! ${currentPemberi} memberikan kembali ke ${firstPemberi}.`,
+            );
+
+            currentPemberi = null;
+            firstPemberi = null;
+          } else {
+            if (isAutoMode) {
+              setTimeout(() => {
+                if (isAutoMode && !isSpinning) {
+                  spinWheel();
+                }
+              }, 1000);
+            }
+          }
+        }, spinDuration * 1000);
+      }
+
+      function updateTextArea() {
+        nameInput.value = names.join("\n");
+      }
+
+      updateSpeed();
+      drawWheel();
+    </script>
+  </body>
+</html>
