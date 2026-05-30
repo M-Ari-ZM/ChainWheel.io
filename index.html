@@ -86,23 +86,32 @@
         height: calc(100vh - 40px);
       }
 
-      .refreshInput {
+      .inputTools {
         display: flex;
         justify-content: space-between;
         align-items: center;
       }
 
-      .refresh-btn {
+      .tools-action {
+        display: flex;
+        gap: 6px;
+      }
+
+      .icon-btn {
         border: none;
         background: none;
         color: var(--text-main);
         cursor: pointer;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
       }
 
-      .refresh-btn:hover {
+      .icon-btn:hover:not(:disabled) {
         color: #3498db;
-        transform: rotate(-360deg);
+      }
+
+      .icon-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
       }
 
       h3 {
@@ -447,11 +456,26 @@
       <div class="sidebar-left">
         <div>
           <h3>Input Nama</h3>
-          <div class="refreshInput">
+          <div class="inputTools">
             <small style="color: var(--text-muted)">1 baris = 1 nama</small>
-            <button class="refresh-btn" onclick="refreshNames()">
-              <b>⭯</b>
-            </button>
+            <div class="tools-action">
+              <button
+                id="undoBtn"
+                class="icon-btn"
+                onclick="undoClear()"
+                disabled
+              >
+                <b>↶</b>
+              </button>
+              <button
+                id="clearBtn"
+                class="icon-btn"
+                onclick="clearNames()"
+                disabled
+              >
+                <b>⭯</b>
+              </button>
+            </div>
           </div>
           <textarea
             id="nameInput"
@@ -551,7 +575,9 @@
       const historyBox = document.getElementById("historyBox");
       const statusPemberi = document.getElementById("statusPemberi");
       const spinBtn = document.getElementById("spinBtn");
-      const resetBtn = document.getElementById("resetBtn");
+      let lastInputBackup = "";
+      const clearBtn = document.getElementById("clearBtn");
+      const undoBtn = document.getElementById("undoBtn");
       const autoToggle = document.getElementById("autoToggle");
       const toggleText = document.getElementById("toggleText");
       const logSearch = document.getElementById("logSearch");
@@ -578,9 +604,34 @@
         "#2ecc71",
       ];
 
-      function refreshNames() {
-        if (isSpinning) return;
+      function clearNames() {
+        if (isSpinning || names.length === 0) return;
+
+        lastInputBackup = nameInput.value;
+
         nameInput.value = "";
+
+        clearBtn.disabled = true;
+        undoBtn.disabled = false;
+
+        drawWheel();
+      }
+
+      function undoClear() {
+        if (!lastInputBackup) return;
+
+        nameInput.value = lastInputBackup;
+
+        names = lastInputBackup
+          .split("\n")
+          .map((name) => name.trim())
+          .filter((name) => name !== "");
+
+        originalNames = [...names];
+
+        clearBtn.disabled = false;
+        undoBtn.disabled = true;
+
         drawWheel();
       }
 
@@ -590,7 +641,10 @@
           .split("\n")
           .map((name) => name.trim())
           .filter((name) => name !== "");
+
         originalNames = [...names];
+
+        clearBtn.disabled = names.length === 0;
         drawWheel();
       });
 
@@ -619,8 +673,14 @@
         drawWheel();
       }
 
+      function updateResetButton() {
+        const hasHistory = historyBox.children.length > 0;
+        resetBtn.disabled = !hasHistory;
+      }
+
       function resetApp() {
         if (isSpinning) return;
+        if (historyBox.children.length === 0) return;
         autoToggle.checked = false;
         toggleAutoMode();
 
@@ -629,6 +689,7 @@
         firstPemberi = null;
 
         historyBox.innerHTML = "";
+        updateResetButton();
         logSearch.value = "";
         statusPemberi.innerHTML = `Pemberi Saat Ini: <span style="color:#3498db;">- Belum Ada -</span>`;
         updateTextArea();
@@ -643,6 +704,8 @@
         }, 50);
 
         spinBtn.disabled = false;
+        clearBtn.disabled = false;
+        undoBtn.disabled = true;
       }
 
       function filterLogs() {
@@ -728,7 +791,8 @@
 
         isSpinning = true;
         spinBtn.disabled = true;
-        resetBtn.disabled = true;
+        clearBtn.disabled = true;
+        undoBtn.disabled = true;
         nameInput.disabled = true;
 
         const numSegments = names.length;
@@ -749,6 +813,7 @@
           historyItem.className = "history-item";
           historyItem.innerHTML = `<strong>${currentPemberi}</strong> ➔ <strong>${winnerName}</strong>`;
           historyBox.appendChild(historyItem);
+          updateResetButton();
           filterLogs();
           historyBox.scrollTop = historyBox.scrollHeight;
 
@@ -763,7 +828,8 @@
 
           isSpinning = false;
           spinBtn.disabled = false;
-          resetBtn.disabled = false;
+          clearBtn.disabled = false;
+          undoBtn.disabled = false;
           nameInput.disabled = false;
 
           if (names.length === 0) {
@@ -773,10 +839,13 @@
             finalHistoryItem.style.backgroundColor = "var(--bg-final-item)";
             finalHistoryItem.innerHTML = `<strong>${currentPemberi}</strong> ➔ <strong>${firstPemberi}</strong> 🔄`;
             historyBox.appendChild(finalHistoryItem);
+            updateResetButton();
             historyBox.scrollTop = historyBox.scrollHeight;
 
             statusPemberi.innerHTML = `Rantai Sempurna Terbentuk! 🔄`;
             spinBtn.disabled = true;
+            clearBtn.disabled = true;
+            undoBtn.disabled = true;
             autoToggle.checked = false;
             toggleAutoMode();
 
@@ -802,6 +871,7 @@
         nameInput.value = names.join("\n");
       }
 
+      updateResetButton();
       updateSpeed();
       drawWheel();
     </script>
