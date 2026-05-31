@@ -73,6 +73,16 @@
       header span {
         font-size: 0.85rem;
       }
+      header a {
+        text-decoration: none;
+        color: #3498db;
+        font-weight: bold;
+        transition: all 0.1s ease;
+      }
+      header a:hover {
+        text-decoration: underline;
+        letter-spacing: 1px;
+      }
 
       /* --- SIDEBAR KIRI (INPUT & LOG) --- */
       .sidebar-left {
@@ -451,7 +461,7 @@
   <body>
     <header>
       <h1>⚙️ ChainWheel.io</h1>
-      <span>Created by <b>Ari ZM</b></span>
+      <span>Created by <a href="https://github.com/M-Ari-ZM">Ari ZM</a></span>
     </header>
 
     <main>
@@ -522,7 +532,7 @@
         </div>
 
         <div class="control-group">
-          <span class="control-label">Sistem</span>
+          <span class="control-label">Sistem 🛠️</span>
           <label class="toggle-container">
             <span id="toggleText">Auto-Spin: OFF</span>
             <div class="switch">
@@ -541,7 +551,7 @@
             class="control-label"
             style="display: flex; justify-content: space-between"
           >
-            <span>Durasi Roda</span>
+            <span>Durasi Roda ⏰</span>
             <span style="color: #3498db"><span id="speedVal">4</span>s</span>
           </span>
           <input
@@ -556,7 +566,7 @@
         </div>
 
         <div class="control-group">
-          <span class="control-label">Tampilan</span>
+          <span class="control-label">Tampilan 🌒</span>
           <label class="toggle-container">
             <span>Tema Gelap</span>
             <div class="switch">
