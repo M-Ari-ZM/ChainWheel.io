@@ -197,7 +197,7 @@
 
       .current-status {
         margin-bottom: 25px;
-        font-size: 1.2rem;
+        font-size: clamp(1rem, 2vw, 1.2rem);
         font-weight: 600;
         color: var(--text-main);
         background: var(--bg-card);
@@ -411,6 +411,14 @@
 
         .sidebar-left {
           order: 1;
+        }
+
+        .sidebar-left .history-section {
+          max-height: 250px;
+        }
+        .sidebar-left .history-box {
+          max-height: 200px;
+          overflow-y: auto;
         }
 
         .main-content {
