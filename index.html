@@ -16,6 +16,7 @@
         --text-item: #4a5568;
         --shadow: rgba(0, 0, 0, 0.05);
         --bg-final-item: #e8f8f5;
+        --bg-tutorial: #ebf5fb;
       }
 
       /* --- VARIABEL WARNA (TEMA GELAP) --- */
@@ -29,6 +30,7 @@
         --text-item: #cbd5e1;
         --shadow: rgba(0, 0, 0, 0.3);
         --bg-final-item: #1b3635;
+        --bg-tutorial: #1c2833;
       }
 
       * {
@@ -51,7 +53,7 @@
 
       main {
         display: grid;
-        grid-template-columns: 300px 1fr 260px; /* Struktur 3 Kolom */
+        grid-template-columns: 300px 1fr 260px;
         gap: 20px;
       }
 
@@ -251,19 +253,18 @@
         box-shadow: 0 4px 15px var(--shadow);
         display: flex;
         flex-direction: column;
-        gap: 25px;
+        gap: 15px;
         height: calc(100vh - 40px);
-        justify-content: flex-start;
       }
 
       .btn-box {
         display: flex;
-        flex-direction: column;
         gap: 10px;
         width: 100%;
       }
 
       .spin-btn {
+        flex-grow: 1;
         padding: 14px;
         font-size: 16px;
         font-weight: bold;
@@ -274,7 +275,6 @@
         cursor: pointer;
         box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
         transition: all 0.2s;
-        width: 100%;
       }
 
       .spin-btn:hover:not(:disabled) {
@@ -283,6 +283,8 @@
       }
 
       .reset-btn {
+        flex-shrink: 0;
+        width: 55px;
         padding: 10px;
         font-size: 14px;
         font-weight: bold;
@@ -292,7 +294,6 @@
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s;
-        width: 100%;
       }
 
       .reset-btn:hover:not(:disabled) {
@@ -329,7 +330,6 @@
         letter-spacing: 0.5px;
       }
 
-      /* Toggle & Slider Styling */
       .toggle-container {
         display: flex;
         align-items: center;
@@ -394,6 +394,50 @@
         margin-top: 5px;
       }
 
+      /* --- PERUBAHAN TOTAL TUTORIAL CARD --- */
+      .tutorial-card {
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        background: var(--bg-input);
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1; /* Mengambil seluruh sisa ruang tinggi di sidebar */
+        min-height: 0; /* Penting agar overflow-y di dalam child bekerja */
+        overflow: hidden;
+      }
+
+      .tutorial-header {
+        background: var(--bg-tutorial);
+        padding: 12px;
+        font-size: 13px;
+        font-weight: bold;
+        color: var(--text-main);
+        border-bottom: 1px solid var(--border-color);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .tutorial-content {
+        padding: 15px;
+        font-size: 12.5px;
+        color: var(--text-item);
+        line-height: 1.6;
+        overflow-y: auto; /* Otomatis memunculkan scroll hanya jika konten melebihi sisa tinggi */
+        flex-grow: 1;
+      }
+
+      .tutorial-content ol {
+        padding-left: 16px;
+      }
+
+      .tutorial-content li {
+        margin-bottom: 10px;
+      }
+
+      .tutorial-content li:last-child {
+        margin-bottom: 5px; /* Memberikan jarak tipis di list terakhir agar tidak mepet scrollbar */
+      }
+
       /* --- MEDIA QUERY RESPONSIVE (MOBILE) --- */
       @media (max-width: 900px) {
         body {
@@ -438,17 +482,20 @@
 
         .sidebar-right {
           order: 3;
-          flex-direction: row;
-          flex-wrap: wrap;
-          gap: 10px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
         }
 
-        .sidebar-right > * {
-          flex: 1 1 calc(50% - 10px);
+        .sidebar-right > .btn-box,
+        .sidebar-right > .control-group:nth-child(4),
+        .sidebar-right > .tutorial-card {
+          grid-column: 1 / -1;
         }
 
-        .btn-box {
-          flex: 1 1 100%;
+        /* Di mobile, batasi tinggi tutorial agar tidak terlalu panjang ke bawah */
+        .tutorial-card {
+          max-height: 250px;
         }
 
         .wheel-container {
@@ -526,8 +573,13 @@
           <button class="spin-btn" id="spinBtn" onclick="spinWheel()">
             PUTAR RODA
           </button>
-          <button class="reset-btn" id="resetBtn" onclick="resetApp()">
-            RESET
+          <button
+            class="reset-btn"
+            id="resetBtn"
+            onclick="resetApp()"
+            title="Reset"
+          >
+            X
           </button>
         </div>
 
@@ -579,6 +631,34 @@
             </div>
           </label>
         </div>
+
+        <div class="tutorial-card">
+          <div class="tutorial-header">
+            <span>📋 Cara Penggunaan</span>
+          </div>
+          <div class="tutorial-content">
+            <ol>
+              <li>
+                Masukkan minimal <b>2 nama</b> di kolom input kiri (1 nama per
+                baris).
+              </li>
+              <li>Klik tombol <b>PUTAR RODA</b>.</li>
+              <li>
+                Nama baris pertama otomatis terpilih menjadi
+                <b>Pemberi Pertama</b> dan dikeluarkan dari roda.
+              </li>
+              <li>Roda akan berputar mencari <b>Penerima</b> berikutnya.</li>
+              <li>
+                Setelah terpilih, penerima tersebut otomatis menjadi pemberi
+                baru di ronde selanjutnya.
+              </li>
+              <li>
+                Sistem ini terus berputar secara berantai hingga nama habis dan
+                membentuk <b>Lingkaran Sempurna (Loop)</b>.
+              </li>
+            </ol>
+          </div>
+        </div>
       </div>
     </main>
 
@@ -619,57 +699,46 @@
         "#2ecc71",
       ];
 
+      // Fungsi toggleTutorial bawaan lama dihapus karena sudah tidak memakai dropdown.
+
       function updateButtonStates() {
         const inputHasText = nameInput.value.trim().length > 0;
         const hasHistory = historyBox.children.length > 0;
 
-        if (isSpinning || isAutoMode > 0) {
+        if (isSpinning || isAutoMode) {
           clearBtn.disabled = true;
           undoBtn.disabled = true;
           resetBtn.disabled = true;
           spinBtn.disabled = true;
           nameInput.disabled = true;
         } else {
-          // Kondisi saat Roda Diam
           nameInput.disabled = false;
           spinBtn.disabled = names.length === 0;
-
-          // Clear aktif jika ada text di input
           clearBtn.disabled = !inputHasText;
-
-          // Undo aktif HANYA jika ada data cadangan backup
           undoBtn.disabled = lastInputBackup === "";
-
-          // Reset aktif jika permainan sudah berjalan (punya riwayat) ATAU game sudah berakhir
           resetBtn.disabled = !hasHistory && currentPemberi === null;
         }
       }
 
       function clearNames() {
         if (isSpinning || nameInput.value.trim() === "") return;
-
         lastInputBackup = nameInput.value;
         nameInput.value = "";
         names = [];
         originalNames = [];
-
         updateButtonStates();
         drawWheel();
       }
 
       function undoClear() {
         if (isSpinning || !lastInputBackup) return;
-
         nameInput.value = lastInputBackup;
-        lastInputBackup = ""; // Kosongkan lagi setelah di-restore
-
+        lastInputBackup = "";
         names = nameInput.value
           .split("\n")
-          .map((name) => name.trim())
-          .filter((name) => name !== "");
-
+          .map((n) => n.trim())
+          .filter((n) => n !== "");
         originalNames = [...names];
-
         updateButtonStates();
         drawWheel();
       }
@@ -678,9 +747,8 @@
         if (isSpinning) return;
         names = nameInput.value
           .split("\n")
-          .map((name) => name.trim())
-          .filter((name) => name !== "");
-
+          .map((n) => n.trim())
+          .filter((n) => n !== "");
         originalNames = [...names];
         updateButtonStates();
         drawWheel();
@@ -690,7 +758,6 @@
         isAutoMode = autoToggle.checked;
         toggleText.innerText = isAutoMode ? "Auto-Spin: ON" : "Auto-Spin: OFF";
         toggleText.style.color = isAutoMode ? "#3498db" : "var(--text-item)";
-
         if (isAutoMode && !isSpinning && names.length > 0) {
           spinWheel();
         }
@@ -715,25 +782,25 @@
         if (isSpinning) return;
         autoToggle.checked = false;
         toggleAutoMode();
-
         names = [...originalNames];
         currentPemberi = null;
         firstPemberi = null;
-
         historyBox.innerHTML = "";
         logSearch.value = "";
         statusPemberi.innerHTML = `Pemberi Saat Ini: <span style="color:#3498db;">- Belum Ada -</span>`;
         updateTextArea();
-
         canvas.style.transition = "none";
         currentRotation = 0;
         canvas.style.transform = `rotate(0deg)`;
-
         setTimeout(() => {
           updateSpeed();
           drawWheel();
           updateButtonStates();
         }, 50);
+      }
+
+      function updateTextArea() {
+        nameInput.value = names.join("\n");
       }
 
       function filterLogs() {
@@ -751,7 +818,6 @@
       function drawWheel() {
         const numSegments = names.length;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-
         if (numSegments === 0) {
           ctx.beginPath();
           ctx.arc(250, 250, 240, 0, 2 * Math.PI);
@@ -763,9 +829,7 @@
           ctx.fillText("Masukkan nama di kiri", 250, 250);
           return;
         }
-
         const arcSize = (2 * Math.PI) / numSegments;
-
         for (let i = 0; i < numSegments; i++) {
           const angle = i * arcSize;
           ctx.beginPath();
@@ -776,7 +840,6 @@
           ctx.fill();
           ctx.stroke();
           ctx.strokeStyle = themeToggle.checked ? "#1a1a1e" : "#fff";
-
           ctx.save();
           ctx.translate(250, 250);
           ctx.rotate(angle + arcSize / 2);
@@ -790,7 +853,6 @@
 
       function spinWheel() {
         if (isSpinning) return;
-
         if (!currentPemberi) {
           if (names.length === 0) {
             alert("Tambahkan nama terlebih dahulu di kolom input!");
@@ -798,19 +860,15 @@
             toggleAutoMode();
             return;
           }
-
           if (originalNames.length === 0) {
             originalNames = [...names];
           }
-
           firstPemberi = names[0];
           currentPemberi = firstPemberi;
           names.splice(0, 1);
           updateTextArea();
           drawWheel();
-
           statusPemberi.innerHTML = `Pemberi Saat Ini: <span style="color:#e67e22;">${currentPemberi}</span>`;
-
           if (names.length === 0) {
             alert("Tambahkan minimal 2 nama!");
             return;
@@ -832,8 +890,6 @@
 
         setTimeout(() => {
           const winnerName = names[winnerIndex];
-
-          // 1. Catat Log Rantai
           const historyItem = document.createElement("div");
           historyItem.className = "history-item";
           historyItem.innerHTML = `<strong>${currentPemberi}</strong> ➔ <strong>${winnerName}</strong>`;
@@ -841,20 +897,15 @@
           filterLogs();
           historyBox.scrollTop = historyBox.scrollHeight;
 
-          // 2. Transisi Peran
           currentPemberi = winnerName;
           statusPemberi.innerHTML = `Pemberi Saat Ini: <span style="color:#e67e22;">${currentPemberi}</span>`;
-
-          // 3. Hapus pemenang & Update UI
           names.splice(winnerIndex, 1);
           updateTextArea();
           drawWheel();
-
           isSpinning = false;
           updateButtonStates();
 
           if (names.length === 0) {
-            // Loop Penutup
             const finalHistoryItem = document.createElement("div");
             finalHistoryItem.className = "history-item";
             finalHistoryItem.style.backgroundColor = "var(--bg-final-item)";
@@ -865,29 +916,20 @@
             statusPemberi.innerHTML = `Rantai Sempurna Terbentuk! 🔄`;
             autoToggle.checked = false;
             toggleAutoMode();
-
             updateButtonStates();
-
             alert(
               `Rantai selesai secara melingkar! ${currentPemberi} memberikan kembali ke ${firstPemberi}.`,
             );
-
             currentPemberi = null;
             firstPemberi = null;
           } else {
             if (isAutoMode) {
               setTimeout(() => {
-                if (isAutoMode && !isSpinning) {
-                  spinWheel();
-                }
+                if (isAutoMode && !isSpinning) spinWheel();
               }, 1000);
             }
           }
         }, spinDuration * 1000);
-      }
-
-      function updateTextArea() {
-        nameInput.value = names.join("\n");
       }
 
       updateButtonStates();
